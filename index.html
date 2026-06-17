@@ -333,7 +333,11 @@
             if (CONFIG.googleSheetUrl) {
                 const formData = new FormData();
                 formData.append('time', timeStr);
-                fetch(CONFIG.googleSheetUrl, { method: 'POST', body: formData }).catch(() => {});
+                fetch(CONFIG.googleSheetUrl, { 
+                    method: 'POST', 
+                    mode: 'no-cors', // Ép buộc không check CORS để Google Apps Script nhận được request
+                    body: formData 
+                }).catch((err) => console.log(err));
             }
 
             selectedTimeDisplay.innerHTML = `📅 Hẹn cậu vào: <strong class="text-pink-600 block text-lg mt-1">${timeStr}</strong>`;

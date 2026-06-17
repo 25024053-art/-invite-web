@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gửi Cậu Lời Nhắn Siêu Đặc Biệt 💖</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Pacifico&display=swap" rel="stylesheet">
+    <style>
+        * { font-family: 'Nunito', sans-serif; }
+        .font-pacifico { font-family: 'Pacifico', cursive; }
+        
+        body { 
+            background: radial-gradient(circle at center, #ffeef2 0%, #ffd6e0 60%, #ffb3c6 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .envelope-wrapper {
+            perspective: 1000px;
+            transition: all 0.8s ease-in-out;
+        }
+        .envelope {
+            position: relative;
+            width: 320px;
+            height: 220px;
+            background: #ff6b8b;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+        }
+        .envelope:hover {
+            transform: translateY(-10px) rotateX(10deg);
+        }
+        .envelope::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 0;
+            height: 0;
+            border-left: 160px solid transparent;
+            border-right: 160px solid transparent;
+            border-top: 110px solid #ff4f72;
+            transform-origin: top;
+            transition: transform 0.4s 0.2s ease-in-out;
+            z-index: 30;
+        }
+        .envelope.open::before {
+            transform: rotateX(180deg);
+            z-index: 5;
+        }
+        .letter {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            height: 180px;
+            background: white;
+            border-radius: 8px;
+            transition: all 0.6s ease-in-out;
+            z-index: 10;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        .envelope.open .letter {
+            transform: translateY(-100px) scale(1.05);
+            z-index: 40;
+            height: 380px;
+            width: 340px;
+            left: -10px;
+        }
+
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .music-disk {
+            animation: spin 5s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .heart-particle {
+            position: fixed;
+            pointer-events: none;
+            animation: fall linear forwards;
+            z-index: 0;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-20px) rotate(0deg) scale(0); opacity: 0; }
+            10% { opacity: 1; transform: translateY(10vh) rotate(50deg) scale(1.2); }
+            100% { transform: translateY(110vh) rotate(360deg) scale(0.8); opacity: 0; }
+        }
+
+        .screen-card {
+            width: min(92vw, 550px);
+            z-index: 10;
+            animation: scaleUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        @keyframes scaleUp {
+            from { transform: scale(0.85); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="w-screen h-screen flex items-center justify-center relative">
+
+    <canvas id="particle-canvas"></canvas>
+    
+    <!-- Audio source -->
+    <audio id="love-song" loop>
+        <source src="amee_cover.mp3" type="audio/mp3">
+    </audio>
+
+    <!-- Music Controller Widget -->
+    <div class="absolute top-6 right-6 z-50 flex items-center gap-3 bg-white/80 backdrop-blur px-4 py-2.5 rounded-full shadow-lg border border-pink-200">
+        <button id="music-btn" class="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center text-white cursor-pointer focus:outline-none">
+            <span id="music-icon" class="text-xl">🎵</span>
+        </button>
+        <div class="text-xs font-bold text-pink-600 pr-2">
+            <div>Bật nhạc chill ☕</div>
+            <div class="text-[9px] text-gray-400 font-mono music-title">Trời Giấu Trời Mang Đi (Piano Cover)</div>
+        </div>
+    </div>
+
+    <!-- Màn 0: Bao thư mở đầu bí ẩn -->
+    <div id="envelope-screen" class="envelope-wrapper flex flex-col items-center gap-6 z-10">
+        <div class="text-white font-pacifico text-3xl drop-shadow mb-2 text-center animate-pulse">Cậu ơi, có một bức thư gửi riêng cậu...</div>
+        <div id="envelope" class="envelope flex items-center justify-center">
+            <div class="letter p-6 flex flex-col items-center justify-center text-center">
+                <span class="text-5xl mb-2 animate-bounce">💌</span>
+                <span class="font-bold text-pink-600 text-lg">Click to Open</span>
+            </div>
+            <!-- Wax Seal -->
+            <div class="absolute w-14 h-14 bg-rose-600 rounded-full border-4 border-rose-500 shadow-md flex items-center justify-center text-white text-2xl font-bold cursor-pointer transition transform hover:scale-110 active:scale-95 z-40 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                ❤️
+            </div>
+        </div>
+    </div>
+
+    <!-- Màn 1: Câu hỏi đi chơi + Cute Gif -->
+    <div id="ask-screen" class="screen-card bg-white/95 backdrop-blur-md p-8 md:p-10 rounded-3xl shadow-[0_25px_65px_rgba(255,105,180,0.25)] border-2 border-pink-100 flex flex-col items-center gap-6 hidden">
+        <img id="ask-gif" src="" alt="Pleasing Cat" class="w-40 h-40 object-contain rounded-2xl shadow-inner bg-pink-50/50 p-2" onerror="this.onerror=null;this.src='https://media.tenor.com/CqX81T6x36sAAAAC/cat-cute.gif';if(this.src=='https://media.tenor.com/CqX81T6x36sAAAAC/cat-cute.gif') this.outerHTML='<span class=\"text-5xl\"></span>
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-600 via-rose-500 to-pink-600 text-center leading-tight">
+            Cậu có muốn<br>đi chơi với tớ không?
+        </h1>
+        <div class="flex gap-6 w-full max-w-sm mt-4 justify-between" style="min-height: 80px; position: relative;">
+            <button id="yes-button" class="w-full sm:w-1/2 py-4 bg-gradient-to-r from-pink-500 to-rose-400 hover:from-pink-600 hover:to-rose-500 text-white text-xl font-black rounded-full shadow-lg hover:shadow-pink-300 transition duration-300 transform hover:scale-110 cursor-pointer border-0">
+                Có chứ! 💖
+            </button>
+            <button id="no-button" class="w-full sm:w-1/2 py-4 bg-gray-200 hover:bg-gray-300 text-gray-500 text-xl font-bold rounded-full border border-gray-300 cursor-pointer transition-all duration-200 flex items-center justify-center gap-2">
+                <img src="" class="w-8 h-8 object-contain rounded-full bg-white p-0.5" alt="sad" onerror="this.onerror=null;this.src='https://media.tenor.com/U2pL7V8BvSgAAAAC/sad-cat.gif';if(this.src=='https://media.tenor.com/U2pL7V8BvSgAAAAC/sad-cat.gif') this.outerHTML='<span class=\"text-xl\"></span>
+                Không 😅
+            </button>
+        </div>
+        <p id="troll-msg" class="text-xs text-gray-400 font-mono italic h-4 opacity-0 transition-opacity duration-300"></p>
+    </div>
+
+    <!-- Màn 2: Chốt lịch hẹn hò + Cute Gif -->
+    <div id="schedule-screen" class="screen-card bg-white/95 backdrop-blur-md p-8 md:p-10 rounded-3xl shadow-[0_25px_65px_rgba(99,179,237,0.25)] border-2 border-blue-100 flex flex-col items-center gap-6 hidden">
+        <img id="schedule-gif" src="https://media.tenor.com/g0V21FB1YH8AAAAi/goma-happy.gif" alt="Happy Cat" class="w-40 h-40 object-contain rounded-2xl shadow-inner bg-blue-50/50 p-2 animate-bounce">
+        <h1 class="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 text-center leading-tight">
+            Yay! Tuyệt quá đi mất!<br>Mấy giờ chúng mình đi nhỉ?
+        </h1>
+        <div class="flex flex-col items-center gap-4 w-full max-w-md mt-2">
+            <input type="datetime-local" id="meeting-time" class="w-full p-4 border-2 border-blue-200 rounded-2xl focus:border-blue-400 focus:ring-4 focus:ring-blue-100 outline-none text-lg font-bold text-gray-700 bg-blue-50/50 cursor-pointer"/>
+            <button id="confirm-button" class="w-full py-4 bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500 text-white text-xl font-black rounded-full shadow-lg hover:shadow-blue-300 transition duration-300 transform hover:scale-105 cursor-pointer border-0">
+                ✨ Chốt kèo nha! ✨
+            </button>
+        </div>
+    </div>
+
+    <!-- Màn 3: Thành công rực rỡ + Báo cáo kết quả -->
+    <div id="end-screen" class="screen-card bg-white/95 backdrop-blur-md p-8 md:p-10 rounded-3xl shadow-[0_25px_65px_rgba(255,105,180,0.3)] border-2 border-pink-100 flex flex-col items-center gap-6 hidden">
+        <img src="https://media.tenor.com/97y402J2t_IAAAAi/cat-love.gif" alt="Love Gifs" class="w-44 h-44 object-contain rounded-2xl">
+        <h1 class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-600 via-rose-500 to-pink-600 text-center leading-tight">
+            Okie Chốt Kèo Nhé!
+        </h1>
+        <p class="text-xl text-blue-500 font-bold text-center">Chúc cậu một ngày tốt đẹp nhé !! 💕</p>
+        <div id="selected-time-display" class="text-sm text-pink-700 bg-pink-50 border border-pink-100 px-6 py-3.5 rounded-2xl font-bold text-center shadow-inner mt-2"></div>
+        <button id="close-button" class="px-8 py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-500 font-bold rounded-full text-sm shadow cursor-pointer transition border-0">
+            Tạo lời mời mới 🎨
+        </button>
+    </div>
+
+    <script>
+        // --- KHU VỰC CÀI ĐẶT (DỄ DÀNG THAY THẾ) ---
+                const CONFIG = {
+                    mainGif: "https://i.pinimg.com/originals/dd/d3/5e/ddd35e0972ba5a2b9f985e364a91f355.gif",
+                    noButtonGif: "https://i.pinimg.com/736x/dd/d4/da/ddd4dae9d74c52f40021840c5d59dc9d.jpg",
+                    scheduleGif: "https://i.pinimg.com/originals/62/a5/70/62a5701185eb5b2368af21961665fff1.gif", // GIF ở màn hình nhập ngày
+                    googleSheetUrl: "https://script.google.com/macros/s/AKfycbxqe668iWYNLClCKP_gqUXhSV1ZTMb-FThd5Cdy8-9KiX7t94wuEaQ1K89mCzEBSreQrg/exec", // Link Apps Script mới
+                    audioUrl: "https://files.catbox.moe/x6m7sx.mp3", // Link hoặc file nhạc (.mp3)
+                    musicTitle: "Trời Giấu Trời Mang Đi (Piano Cover)" // Tên bài hát hiển thị
+                };
+                // ----------------------------------------
+        // DOM Elements
+        const askGif = document.getElementById('ask-gif');
+        const noBtnImg = document.querySelector('#no-button img');
+        const scheduleGif = document.getElementById('schedule-gif');
+        const loveSong = document.getElementById('love-song');
+        const musicTitleEl = document.querySelector('.music-title');
+        
+        // Cập nhật link GIF và Nhạc từ CONFIG
+        askGif.src = CONFIG.mainGif;
+        noBtnImg.src = CONFIG.noButtonGif;
+        scheduleGif.src = CONFIG.scheduleGif;
+        
+        if (CONFIG.audioUrl) {
+            audio.src = CONFIG.audioUrl; // Sử dụng trực tiếp .src cho độ ổn định cao nhất
+            audio.load(); 
+        }
+        if (musicTitleEl && CONFIG.musicTitle) {
+            musicTitleEl.textContent = CONFIG.musicTitle;
+        }
+
+        const audio = document.getElementById('love-song');
+        const musicBtn = document.getElementById('music-btn');
+        const musicIcon = document.getElementById('music-icon');
+        const envelope = document.getElementById('envelope');
+        const envelopeScreen = document.getElementById('envelope-screen');
+        const askScreen = document.getElementById('ask-screen');
+        const scheduleScreen = document.getElementById('schedule-screen');
+        const endScreen = document.getElementById('end-screen');
+        const yesBtn = document.getElementById('yes-button');
+        const noBtn = document.getElementById('no-button');
+        const trollMsg = document.getElementById('troll-msg');
+        const meetingInput = document.getElementById('meeting-time');
+        const confirmBtn = document.getElementById('confirm-button');
+        const closeBtn = document.getElementById('close-button');
+        const selectedTimeDisplay = document.getElementById('selected-time-display');
+
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                this.size = Math.random() * 6 + 2;
+                this.speedX = Math.random() * 6 - 3;
+                this.speedY = Math.random() * -8 - 2;
+                this.gravity = 0.15;
+                this.decay = Math.random() * 0.015 + 0.005;
+                this.alpha = 1;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.speedY += this.gravity;
+                this.alpha -= this.decay;
+            }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        function spawnExplosion(x, y) {
+            const colors = ['#ff6b8b', '#ffd6e0', '#ff4f72', '#ff9a9e', '#feca57', '#54a0ff'];
+            for (let i = 0; i < 40; i++) {
+                particles.push(new Particle(x, y, colors[Math.floor(Math.random() * colors.length)]));
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles = particles.filter(p => p.alpha > 0);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        let isPlaying = false;
+        musicBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                audio.pause();
+                musicIcon.textContent = '🎵';
+                musicBtn.classList.remove('music-disk');
+            } else {
+                audio.volume = 0.5;
+                audio.play().catch(e => console.log('Autoplay blocked by browser'));
+                musicIcon.textContent = '⏸️';
+                musicBtn.classList.add('music-disk');
+            }
+            isPlaying = !isPlaying;
+        });
+
+        function spawnRainHeart() {
+            const rain = document.createElement('div');
+            rain.className = 'heart-particle';
+            rain.innerHTML = ['💖', '💕', '🌸', '✨', '🎈'][Math.floor(Math.random() * 5)];
+            rain.style.left = Math.random() * 100 + 'vw';
+            rain.style.top = '-20px';
+            rain.style.fontSize = Math.random() * 20 + 15 + 'px';
+            const duration = Math.random() * 3 + 3;
+            rain.style.animationDuration = duration + 's';
+            document.body.appendChild(rain);
+            setTimeout(() => rain.remove(), duration * 1000);
+        }
+        setInterval(spawnRainHeart, 300);
+
+        envelope.addEventListener('click', () => {
+            envelope.classList.add('open');
+            if (!isPlaying) {
+                audio.volume = 0.5;
+                audio.play().catch(() => {});
+                musicIcon.textContent = '⏸️';
+                musicBtn.classList.add('music-disk');
+                isPlaying = true;
+            }
+            setTimeout(() => {
+                envelopeScreen.style.display = 'none';
+                askScreen.classList.remove('hidden');
+            }, 1000);
+        });
+
+        const trollTexts = [
+            "Ơ kìa bấm nhầm à? 😮",
+            "Tớ nhanh tay lắm nha! ⚡",
+            "Đừng hòng bấm nút này! 😜",
+            "Bấm Có đi mà! Pleaseee 🥺",
+            "Càng bấm nó càng chạy đấy! 😂",
+            "Tớ block nút Không rồi! 🔒"
+        ];
+
+        let escapeCount = 0;
+        
+        function escapeNoBtn() {
+            escapeCount++;
+            const screenRect = askScreen.getBoundingClientRect();
+            const btnRect = noBtn.getBoundingClientRect();
+            
+            const margin = 20;
+            const cardWidth = screenRect.width;
+            const cardHeight = screenRect.height;
+            
+            const randomX = Math.random() * (cardWidth - btnRect.width - margin * 2) + margin;
+            const randomY = Math.random() * (cardHeight - btnRect.height - 180) + 120;
+
+            noBtn.style.position = 'absolute';
+            noBtn.style.left = `${randomX}px`;
+            noBtn.style.top = `${randomY}px`;
+            noBtn.style.transform = 'none';
+            
+            trollMsg.textContent = trollTexts[Math.floor(Math.random() * trollTexts.length)];
+            trollMsg.style.opacity = '1';
+            setTimeout(() => trollMsg.style.opacity = '0', 1200);
+
+            if (escapeCount > 3) {
+                yesBtn.style.transform = `scale(${1 + escapeCount*0.05})`;
+            }
+        }
+        
+        noBtn.addEventListener('mouseenter', escapeNoBtn);
+
+        noBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            noBtn.textContent = 'Có chứ!';
+            noBtn.style.position = 'static';
+            noBtn.classList.remove('bg-gray-200', 'text-gray-500');
+            noBtn.classList.add('bg-gradient-to-r', 'from-pink-500', 'to-rose-400', 'text-white');
+            setTimeout(goToScheduleScreen, 500);
+        });
+
+        function goToScheduleScreen() {
+            spawnExplosion(window.innerWidth/2, window.innerHeight/2);
+            askScreen.classList.add('hidden');
+            scheduleScreen.classList.remove('hidden');
+        }
+
+        yesBtn.addEventListener('click', goToScheduleScreen);
+
+        confirmBtn.addEventListener('click', () => {
+            if (!meetingInput.value) {
+                alert('Ui cậu chưa chọn giờ đi chơi kìa! ⏰');
+                return;
+            }
+            
+            const rawVal = new Date(meetingInput.value);
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+            const timeStr = rawVal.toLocaleDateString('vi-VN', options);
+            
+            // Gửi dữ liệu về Google Sheets
+            if (CONFIG.googleSheetUrl) {
+                // Sử dụng FormData để tránh CORS preflight và bảo đảm gửi POST thành công
+                const formData = new FormData();
+                formData.append('time', timeStr);
+                
+                fetch(CONFIG.googleSheetUrl, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => {
+                    console.log('Đã gửi thành công!');
+                    // Có thể thêm hành động gì đó ở đây nếu cần
+                })
+                .catch(err => console.error("Lỗi gửi: ", err));
+            }
+
+            selectedTimeDisplay.innerHTML = `📅 Hẹn cậu vào: <strong class="text-pink-600 block text-lg mt-1">${timeStr}</strong>`;
+            
+            const rect = confirmBtn.getBoundingClientRect();
+            spawnExplosion(rect.left + rect.width/2, rect.top + rect.height/2);
+            
+            setTimeout(() => {
+                scheduleScreen.classList.add('hidden');
+                endScreen.classList.remove('hidden');
+                spawnExplosion(window.innerWidth/2, window.innerHeight/3);
+                setInterval(() => {
+                    spawnExplosion(Math.random() * window.innerWidth, Math.random() * window.innerHeight * 0.7);
+                }, 800);
+            }, 600);
+        });
+
+        closeBtn.addEventListener('click', () => {
+            location.reload();
+        });
+    </script>
+</body>
+</html>

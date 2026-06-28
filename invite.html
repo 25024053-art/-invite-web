@@ -14,11 +14,19 @@
             background: radial-gradient(circle at center, #ffeef2 0%, #ffd6e0 60%, #ffb3c6 100%);
             height: 100vh;
             overflow: hidden;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .envelope-wrapper {
             perspective: 1000px;
             transition: all 0.8s ease-in-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
         }
         .envelope {
             position: relative;
@@ -63,6 +71,11 @@
             transition: all 0.6s ease-in-out;
             z-index: 10;
             box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
         .envelope.open .letter {
             transform: translateY(-100px) scale(1.05);
@@ -110,13 +123,13 @@
         }
     </style>
 </head>
-<body class="w-screen h-screen flex items-center justify-center relative">
+<body>
 
     <canvas id="particle-canvas"></canvas>
     
     <!-- Audio source -->
     <audio id="love-song" loop>
-        <source src="amee_cover.mp3" type="audio/mp3">
+        <source src="https://files.catbox.moe/x6m7sx.mp3" type="audio/mp3">
     </audio>
 
     <!-- Music Controller Widget -->
@@ -131,10 +144,10 @@
     </div>
 
     <!-- Màn 0: Bao thư mở đầu bí ẩn -->
-    <div id="envelope-screen" class="envelope-wrapper flex flex-col items-center gap-6 z-10">
+    <div id="envelope-screen" class="envelope-wrapper">
         <div class="text-white font-pacifico text-3xl drop-shadow mb-2 text-center animate-pulse">Cậu ơi, có một bức thư gửi riêng cậu...</div>
         <div id="envelope" class="envelope flex items-center justify-center">
-            <div class="letter p-6 flex flex-col items-center justify-center text-center">
+            <div class="letter p-6">
                 <span class="text-5xl mb-2 animate-bounce">💌</span>
                 <span class="font-bold text-pink-600 text-lg">Click to Open</span>
             </div>
@@ -147,7 +160,7 @@
 
     <!-- Màn 1: Câu hỏi đi chơi + Cute Gif -->
     <div id="ask-screen" class="screen-card bg-white/95 backdrop-blur-md p-8 md:p-10 rounded-3xl shadow-[0_25px_65px_rgba(255,105,180,0.25)] border-2 border-pink-100 flex flex-col items-center gap-6 hidden">
-        <img id="ask-gif" src="" alt="Pleasing Cat" class="w-40 h-40 object-contain rounded-2xl shadow-inner bg-pink-50/50 p-2" onerror="this.onerror=null;this.src='https://media.tenor.com/CqX81T6x36sAAAAC/cat-cute.gif';if(this.src=='https://media.tenor.com/CqX81T6x36sAAAAC/cat-cute.gif') this.outerHTML='<span class=\"text-5xl\"></span>
+        <img id="ask-gif" src="https://i.pinimg.com/originals/dd/d3/5e/ddd35e0972ba5a2b9f985e364a91f355.gif" alt="Pleasing Cat" class="w-40 h-40 object-contain rounded-2xl shadow-inner bg-pink-50/50 p-2">
         <h1 class="text-3xl sm:text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-600 via-rose-500 to-pink-600 text-center leading-tight">
             Cậu có muốn<br>đi chơi với tớ không?
         </h1>
@@ -156,7 +169,7 @@
                 Có chứ! 💖
             </button>
             <button id="no-button" class="w-full sm:w-1/2 py-4 bg-gray-200 hover:bg-gray-300 text-gray-500 text-xl font-bold rounded-full border border-gray-300 cursor-pointer transition-all duration-200 flex items-center justify-center gap-2">
-                <img src="" class="w-8 h-8 object-contain rounded-full bg-white p-0.5" alt="sad" onerror="this.onerror=null;this.src='https://media.tenor.com/U2pL7V8BvSgAAAAC/sad-cat.gif';if(this.src=='https://media.tenor.com/U2pL7V8BvSgAAAAC/sad-cat.gif') this.outerHTML='<span class=\"text-xl\"></span>
+                <img src="https://i.pinimg.com/736x/dd/d4/da/ddd4dae9d74c52f40021840c5d59dc9d.jpg" class="w-8 h-8 object-contain rounded-full bg-white p-0.5" alt="sad">
                 Không 😅
             </button>
         </div>
@@ -165,7 +178,7 @@
 
     <!-- Màn 2: Chốt lịch hẹn hò + Cute Gif -->
     <div id="schedule-screen" class="screen-card bg-white/95 backdrop-blur-md p-8 md:p-10 rounded-3xl shadow-[0_25px_65px_rgba(99,179,237,0.25)] border-2 border-blue-100 flex flex-col items-center gap-6 hidden">
-        <img id="schedule-gif" src="https://media.tenor.com/g0V21FB1YH8AAAAi/goma-happy.gif" alt="Happy Cat" class="w-40 h-40 object-contain rounded-2xl shadow-inner bg-blue-50/50 p-2 animate-bounce">
+        <img id="schedule-gif" src="https://i.pinimg.com/originals/62/a5/70/62a5701185eb5b2368af21961665fff1.gif" alt="Happy Cat" class="w-40 h-40 object-contain rounded-2xl shadow-inner bg-blue-50/50 p-2 animate-bounce">
         <h1 class="text-3xl sm:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600 text-center leading-tight">
             Yay! Tuyệt quá đi mất!<br>Mấy giờ chúng mình đi nhỉ?
         </h1>
@@ -191,35 +204,12 @@
     </div>
 
     <script>
-        // --- KHU VỰC CÀI ĐẶT (DỄ DÀNG THAY THẾ) ---
-                const CONFIG = {
-                    mainGif: "https://i.pinimg.com/originals/dd/d3/5e/ddd35e0972ba5a2b9f985e364a91f355.gif",
-                    noButtonGif: "https://i.pinimg.com/736x/dd/d4/da/ddd4dae9d74c52f40021840c5d59dc9d.jpg",
-                    scheduleGif: "https://i.pinimg.com/originals/62/a5/70/62a5701185eb5b2368af21961665fff1.gif", // GIF ở màn hình nhập ngày
-                    googleSheetUrl: "https://script.google.com/macros/s/AKfycbxqe668iWYNLClCKP_gqUXhSV1ZTMb-FThd5Cdy8-9KiX7t94wuEaQ1K89mCzEBSreQrg/exec", // Link Apps Script mới
-                    audioUrl: "https://files.catbox.moe/x6m7sx.mp3", // Link hoặc file nhạc (.mp3)
-                    musicTitle: "Trời Giấu Trời Mang Đi (Piano Cover)" // Tên bài hát hiển thị
-                };
-                // ----------------------------------------
-        // DOM Elements
-        const askGif = document.getElementById('ask-gif');
-        const noBtnImg = document.querySelector('#no-button img');
-        const scheduleGif = document.getElementById('schedule-gif');
-        const loveSong = document.getElementById('love-song');
-        const musicTitleEl = document.querySelector('.music-title');
-        
-        // Cập nhật link GIF và Nhạc từ CONFIG
-        askGif.src = CONFIG.mainGif;
-        noBtnImg.src = CONFIG.noButtonGif;
-        scheduleGif.src = CONFIG.scheduleGif;
-        
-        if (CONFIG.audioUrl) {
-            audio.src = CONFIG.audioUrl; // Sử dụng trực tiếp .src cho độ ổn định cao nhất
-            audio.load(); 
-        }
-        if (musicTitleEl && CONFIG.musicTitle) {
-            musicTitleEl.textContent = CONFIG.musicTitle;
-        }
+        // --- KHU VỰC CÀI ĐẶT ---
+        const CONFIG = {
+            googleSheetUrl: "https://script.google.com/macros/s/AKfycbxqe668iWYNLClCKP_gqUXhSV1ZTMb-FThd5Cdy8-9KiX7t94wuEaQ1K89mCzEBSreQrg/exec",
+            audioUrl: "https://files.catbox.moe/x6m7sx.mp3",
+            musicTitle: "Trời Giấu Trời Mang Đi (Piano Cover)"
+        };
 
         const audio = document.getElementById('love-song');
         const musicBtn = document.getElementById('music-btn');
@@ -236,11 +226,12 @@
         const confirmBtn = document.getElementById('confirm-button');
         const closeBtn = document.getElementById('close-button');
         const selectedTimeDisplay = document.getElementById('selected-time-display');
-
         const canvas = document.getElementById('particle-canvas');
         const ctx = canvas.getContext('2d');
-        let particles = [];
         
+        let particles = [];
+        let isPlaying = false;
+
         function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
@@ -250,9 +241,7 @@
 
         class Particle {
             constructor(x, y, color) {
-                this.x = x;
-                this.y = y;
-                this.color = color;
+                this.x = x; this.y = y; this.color = color;
                 this.size = Math.random() * 6 + 2;
                 this.speedX = Math.random() * 6 - 3;
                 this.speedY = Math.random() * -8 - 2;
@@ -261,68 +250,41 @@
                 this.alpha = 1;
             }
             update() {
-                this.x += this.speedX;
-                this.y += this.speedY;
-                this.speedY += this.gravity;
-                this.alpha -= this.decay;
+                this.x += this.speedX; this.y += this.speedY;
+                this.speedY += this.gravity; this.alpha -= this.decay;
             }
             draw() {
-                ctx.save();
-                ctx.globalAlpha = this.alpha;
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.restore();
+                ctx.save(); ctx.globalAlpha = this.alpha; ctx.fillStyle = this.color;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill(); ctx.restore();
             }
         }
 
         function spawnExplosion(x, y) {
             const colors = ['#ff6b8b', '#ffd6e0', '#ff4f72', '#ff9a9e', '#feca57', '#54a0ff'];
-            for (let i = 0; i < 40; i++) {
-                particles.push(new Particle(x, y, colors[Math.floor(Math.random() * colors.length)]));
-            }
+            for (let i = 0; i < 40; i++) particles.push(new Particle(x, y, colors[Math.floor(Math.random() * colors.length)]));
         }
 
         function animateParticles() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             particles = particles.filter(p => p.alpha > 0);
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
+            particles.forEach(p => { p.update(); p.draw(); });
             requestAnimationFrame(animateParticles);
         }
         animateParticles();
 
-        let isPlaying = false;
         musicBtn.addEventListener('click', () => {
             if (isPlaying) {
-                audio.pause();
-                musicIcon.textContent = '🎵';
+                audio.pause(); musicIcon.textContent = '🎵';
                 musicBtn.classList.remove('music-disk');
             } else {
                 audio.volume = 0.5;
-                audio.play().catch(e => console.log('Autoplay blocked by browser'));
+                audio.play().catch(() => {});
                 musicIcon.textContent = '⏸️';
                 musicBtn.classList.add('music-disk');
             }
             isPlaying = !isPlaying;
         });
-
-        function spawnRainHeart() {
-            const rain = document.createElement('div');
-            rain.className = 'heart-particle';
-            rain.innerHTML = ['💖', '💕', '🌸', '✨', '🎈'][Math.floor(Math.random() * 5)];
-            rain.style.left = Math.random() * 100 + 'vw';
-            rain.style.top = '-20px';
-            rain.style.fontSize = Math.random() * 20 + 15 + 'px';
-            const duration = Math.random() * 3 + 3;
-            rain.style.animationDuration = duration + 's';
-            document.body.appendChild(rain);
-            setTimeout(() => rain.remove(), duration * 1000);
-        }
-        setInterval(spawnRainHeart, 300);
 
         envelope.addEventListener('click', () => {
             envelope.classList.add('open');
@@ -339,107 +301,169 @@
             }, 1000);
         });
 
-        const trollTexts = [
-            "Ơ kìa bấm nhầm à? 😮",
-            "Tớ nhanh tay lắm nha! ⚡",
-            "Đừng hòng bấm nút này! 😜",
-            "Bấm Có đi mà! Pleaseee 🥺",
-            "Càng bấm nó càng chạy đấy! 😂",
-            "Tớ block nút Không rồi! 🔒"
-        ];
+        const trollTexts = ["Ơ kìa? 😮", "Tớ nhanh lắm! ⚡", "Đừng hòng! 😜", "Bấm Có đi! 🥺", "Nó chạy đấy! 😂", "Haha! 😂", "Trật rồi! 🎯", "Nhanh hơn nha! 💨"];
 
-        let escapeCount = 0;
-        
-        function escapeNoBtn() {
-            escapeCount++;
+        // Chọn ngẫu nhiên 1 trong 3 kiểu troll
+        let trollMode = Math.floor(Math.random() * 3); // 0, 1, 2
+        let noClickCount = 0;
+        let noScale = 1;
+        let yesScale = 1;
+        let trollInterval = null;
+
+        function resetTrollState() {
+            trollMode = Math.floor(Math.random() * 3);
+            noClickCount = 0;
+            noScale = 1;
+            yesScale = 1;
+            if (trollInterval) clearInterval(trollInterval);
+            trollInterval = null;
+
+            // Reset nút Không
+            noBtn.style.position = '';
+            noBtn.style.left = '';
+            noBtn.style.top = '';
+            noBtn.style.transform = '';
+            noBtn.style.opacity = '1';
+            noBtn.style.transition = '';
+            noBtn.style.pointerEvents = '';
+            noBtn.textContent = '';
+            noBtn.innerHTML = `<img src="https://i.pinimg.com/736x/dd/d4/da/ddd4dae9d74c52f40021840c5d59dc9d.jpg" class="w-8 h-8 object-contain rounded-full bg-white p-0.5" alt="sad"> Không 😅`;
+            noBtn.className = 'w-full sm:w-1/2 py-4 bg-gray-200 hover:bg-gray-300 text-gray-500 text-xl font-bold rounded-full border border-gray-300 cursor-pointer transition-all duration-200 flex items-center justify-center gap-2';
+
+            // Reset nút Có
+            yesBtn.style.transform = '';
+            yesBtn.style.fontSize = '';
+        }
+
+        function showTroll(msg) {
+            trollMsg.textContent = msg;
+            trollMsg.style.opacity = '1';
+            setTimeout(() => trollMsg.style.opacity = '0', 1000);
+        }
+
+        // === MODE 0: Chạy lòng vòng (mouseenter) ===
+        function setupMode0() {
+            noBtn.addEventListener('mouseenter', handleMode0);
+        }
+        function handleMode0() {
+            if (trollMode !== 0) return;
             const screenRect = askScreen.getBoundingClientRect();
             const btnRect = noBtn.getBoundingClientRect();
-            
             const margin = 20;
-            const cardWidth = screenRect.width;
-            const cardHeight = screenRect.height;
-            
-            const randomX = Math.random() * (cardWidth - btnRect.width - margin * 2) + margin;
-            const randomY = Math.random() * (cardHeight - btnRect.height - 180) + 120;
-
+            const randomX = Math.random() * (screenRect.width - btnRect.width - margin * 2) + margin;
+            const randomY = Math.random() * (screenRect.height - btnRect.height - 180) + 120;
             noBtn.style.position = 'absolute';
             noBtn.style.left = `${randomX}px`;
             noBtn.style.top = `${randomY}px`;
-            noBtn.style.transform = 'none';
-            
-            trollMsg.textContent = trollTexts[Math.floor(Math.random() * trollTexts.length)];
-            trollMsg.style.opacity = '1';
-            setTimeout(() => trollMsg.style.opacity = '0', 1200);
-
-            if (escapeCount > 3) {
-                yesBtn.style.transform = `scale(${1 + escapeCount*0.05})`;
+            showTroll(trollTexts[Math.floor(Math.random() * trollTexts.length)]);
+            noClickCount++;
+            if (noClickCount > 3) {
+                yesScale = Math.min(1.4, 1 + noClickCount * 0.05);
+                yesBtn.style.transform = `scale(${yesScale})`;
             }
         }
-        
-        noBtn.addEventListener('mouseenter', escapeNoBtn);
 
-        noBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            noBtn.textContent = 'Có chứ!';
-            noBtn.style.position = 'static';
-            noBtn.classList.remove('bg-gray-200', 'text-gray-500');
-            noBtn.classList.add('bg-gradient-to-r', 'from-pink-500', 'to-rose-400', 'text-white');
-            setTimeout(goToScheduleScreen, 500);
+        // === MODE 1: Teo nhỏ rồi mất, nút Có to ra (click) ===
+        function handleMode1() {
+            if (trollMode !== 1) return;
+            noClickCount++;
+            noScale = Math.max(0, noScale - 0.2);
+            yesScale = Math.min(2.0, yesScale + 0.15);
+            noBtn.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+            noBtn.style.transform = `scale(${noScale})`;
+            yesBtn.style.transition = 'transform 0.3s ease';
+            yesBtn.style.transform = `scale(${yesScale})`;
+            yesBtn.style.fontSize = `${Math.min(28, 20 + noClickCount * 2)}px`;
+            if (noClickCount === 1) showTroll("Càng bấm càng teo! 😏");
+            else if (noClickCount === 2) showTroll("Gần mất rồi kìa! 😂");
+            else if (noClickCount >= 3) showTroll("Biến rồi! 💨");
+            if (noScale <= 0) {
+                noBtn.style.opacity = '0';
+                noBtn.style.pointerEvents = 'none';
+                showTroll("Mất tiêu rồi! ✨");
+            }
+        }
+
+        // === MODE 2: Lật ngược thành nút Có (click) ===
+        function handleMode2() {
+            if (trollMode !== 2) return;
+            noClickCount++;
+            noBtn.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+
+            if (noClickCount === 1) {
+                showTroll("Ủa? Cái này lạ lắm nha 👀");
+                noBtn.style.transform = 'rotateY(90deg)';
+                setTimeout(() => {
+                    noBtn.innerHTML = `💖 Có chứ! 💖`;
+                    noBtn.className = 'w-full sm:w-1/2 py-4 bg-gradient-to-r from-pink-500 to-rose-400 text-white text-xl font-black rounded-full shadow-lg cursor-pointer transition-all duration-300 flex items-center justify-center gap-2 border-0';
+                    noBtn.style.transform = 'rotateY(0deg)';
+                }, 250);
+                // Nếu bấm nút "Không" giờ đã thành "Có" thì trigger yes
+                setTimeout(() => {
+                    noBtn.addEventListener('click', () => yesBtn.click(), { once: true });
+                }, 600);
+                showTroll("Lật rồi! Bây giờ là nút Có rồi nha! 😂");
+            }
+        }
+
+        // Gắn event click cho nút Không
+        noBtn.addEventListener('click', () => {
+            if (trollMode === 1) handleMode1();
+            else if (trollMode === 2) handleMode2();
         });
 
-        function goToScheduleScreen() {
+        // Gắn mode 0
+        setupMode0();
+
+        // Reset lại trollMode mỗi lần reload màn hình ask
+        // (được gọi từ closeBtn)
+
+
+        yesBtn.addEventListener('click', () => {
             spawnExplosion(window.innerWidth/2, window.innerHeight/2);
             askScreen.classList.add('hidden');
             scheduleScreen.classList.remove('hidden');
-        }
-
-        yesBtn.addEventListener('click', goToScheduleScreen);
+        });
 
         confirmBtn.addEventListener('click', () => {
-            if (!meetingInput.value) {
-                alert('Ui cậu chưa chọn giờ đi chơi kìa! ⏰');
-                return;
-            }
+            if (!meetingInput.value) return alert('Ui cậu chưa chọn giờ kìa! ⏰');
+            const timeStr = new Date(meetingInput.value).toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             
-            const rawVal = new Date(meetingInput.value);
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-            const timeStr = rawVal.toLocaleDateString('vi-VN', options);
-            
-            // Gửi dữ liệu về Google Sheets
             if (CONFIG.googleSheetUrl) {
-                // Sử dụng FormData để tránh CORS preflight và bảo đảm gửi POST thành công
                 const formData = new FormData();
                 formData.append('time', timeStr);
-                
-                fetch(CONFIG.googleSheetUrl, {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(res => {
-                    console.log('Đã gửi thành công!');
-                    // Có thể thêm hành động gì đó ở đây nếu cần
-                })
-                .catch(err => console.error("Lỗi gửi: ", err));
+                fetch(CONFIG.googleSheetUrl, { 
+                    method: 'POST', 
+                    mode: 'no-cors', // Ép buộc không check CORS để Google Apps Script nhận được request
+                    body: formData 
+                }).catch((err) => console.log(err));
             }
 
             selectedTimeDisplay.innerHTML = `📅 Hẹn cậu vào: <strong class="text-pink-600 block text-lg mt-1">${timeStr}</strong>`;
-            
-            const rect = confirmBtn.getBoundingClientRect();
-            spawnExplosion(rect.left + rect.width/2, rect.top + rect.height/2);
-            
-            setTimeout(() => {
-                scheduleScreen.classList.add('hidden');
-                endScreen.classList.remove('hidden');
-                spawnExplosion(window.innerWidth/2, window.innerHeight/3);
-                setInterval(() => {
-                    spawnExplosion(Math.random() * window.innerWidth, Math.random() * window.innerHeight * 0.7);
-                }, 800);
-            }, 600);
+            scheduleScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            spawnExplosion(window.innerWidth/2, window.innerHeight/3);
         });
 
         closeBtn.addEventListener('click', () => {
-            location.reload();
+            endScreen.classList.add('hidden');
+            scheduleScreen.classList.add('hidden');
+            askScreen.classList.add('hidden');
+            envelope.classList.remove('open');
+            resetTrollState();
+            envelopeScreen.style.display = 'flex';
         });
+        setInterval(() => {
+            const heart = document.createElement('div');
+            heart.className = 'heart-particle';
+            heart.innerHTML = ['💖', '💕', '🌸', '✨', '🎈'][Math.floor(Math.random() * 5)];
+            heart.style.left = Math.random() * 100 + 'vw';
+            heart.style.fontSize = Math.random() * 20 + 15 + 'px';
+            const dur = Math.random() * 3 + 3;
+            heart.style.animationDuration = dur + 's';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), dur * 1000);
+        }, 300);
     </script>
 </body>
 </html>

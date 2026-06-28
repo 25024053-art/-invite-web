@@ -301,11 +301,52 @@
             }, 1000);
         });
 
-        const trollTexts = ["Ơ kìa? 😮", "Tớ nhanh lắm! ⚡", "Đừng hòng! 😜", "Bấm Có đi! 🥺", "Nó chạy đấy! 😂"];
-        let escapeCount = 0;
-        
-        noBtn.addEventListener('mouseenter', () => {
-            escapeCount++;
+        const trollTexts = ["Ơ kìa? 😮", "Tớ nhanh lắm! ⚡", "Đừng hòng! 😜", "Bấm Có đi! 🥺", "Nó chạy đấy! 😂", "Haha! 😂", "Trật rồi! 🎯", "Nhanh hơn nha! 💨"];
+
+        // Chọn ngẫu nhiên 1 trong 3 kiểu troll
+        let trollMode = Math.floor(Math.random() * 3); // 0, 1, 2
+        let noClickCount = 0;
+        let noScale = 1;
+        let yesScale = 1;
+        let trollInterval = null;
+
+        function resetTrollState() {
+            trollMode = Math.floor(Math.random() * 3);
+            noClickCount = 0;
+            noScale = 1;
+            yesScale = 1;
+            if (trollInterval) clearInterval(trollInterval);
+            trollInterval = null;
+
+            // Reset nút Không
+            noBtn.style.position = '';
+            noBtn.style.left = '';
+            noBtn.style.top = '';
+            noBtn.style.transform = '';
+            noBtn.style.opacity = '1';
+            noBtn.style.transition = '';
+            noBtn.style.pointerEvents = '';
+            noBtn.textContent = '';
+            noBtn.innerHTML = `<img src="https://i.pinimg.com/736x/dd/d4/da/ddd4dae9d74c52f40021840c5d59dc9d.jpg" class="w-8 h-8 object-contain rounded-full bg-white p-0.5" alt="sad"> Không 😅`;
+            noBtn.className = 'w-full sm:w-1/2 py-4 bg-gray-200 hover:bg-gray-300 text-gray-500 text-xl font-bold rounded-full border border-gray-300 cursor-pointer transition-all duration-200 flex items-center justify-center gap-2';
+
+            // Reset nút Có
+            yesBtn.style.transform = '';
+            yesBtn.style.fontSize = '';
+        }
+
+        function showTroll(msg) {
+            trollMsg.textContent = msg;
+            trollMsg.style.opacity = '1';
+            setTimeout(() => trollMsg.style.opacity = '0', 1000);
+        }
+
+        // === MODE 0: Chạy lòng vòng (mouseenter) ===
+        function setupMode0() {
+            noBtn.addEventListener('mouseenter', handleMode0);
+        }
+        function handleMode0() {
+            if (trollMode !== 0) return;
             const screenRect = askScreen.getBoundingClientRect();
             const btnRect = noBtn.getBoundingClientRect();
             const margin = 20;
@@ -314,11 +355,69 @@
             noBtn.style.position = 'absolute';
             noBtn.style.left = `${randomX}px`;
             noBtn.style.top = `${randomY}px`;
-            trollMsg.textContent = trollTexts[Math.floor(Math.random() * trollTexts.length)];
-            trollMsg.style.opacity = '1';
-            setTimeout(() => trollMsg.style.opacity = '0', 1000);
-            if (escapeCount > 3) yesBtn.style.transform = `scale(${1 + escapeCount*0.05})`;
+            showTroll(trollTexts[Math.floor(Math.random() * trollTexts.length)]);
+            noClickCount++;
+            if (noClickCount > 3) {
+                yesScale = Math.min(1.4, 1 + noClickCount * 0.05);
+                yesBtn.style.transform = `scale(${yesScale})`;
+            }
+        }
+
+        // === MODE 1: Teo nhỏ rồi mất, nút Có to ra (click) ===
+        function handleMode1() {
+            if (trollMode !== 1) return;
+            noClickCount++;
+            noScale = Math.max(0, noScale - 0.2);
+            yesScale = Math.min(2.0, yesScale + 0.15);
+            noBtn.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+            noBtn.style.transform = `scale(${noScale})`;
+            yesBtn.style.transition = 'transform 0.3s ease';
+            yesBtn.style.transform = `scale(${yesScale})`;
+            yesBtn.style.fontSize = `${Math.min(28, 20 + noClickCount * 2)}px`;
+            if (noClickCount === 1) showTroll("Càng bấm càng teo! 😏");
+            else if (noClickCount === 2) showTroll("Gần mất rồi kìa! 😂");
+            else if (noClickCount >= 3) showTroll("Biến rồi! 💨");
+            if (noScale <= 0) {
+                noBtn.style.opacity = '0';
+                noBtn.style.pointerEvents = 'none';
+                showTroll("Mất tiêu rồi! ✨");
+            }
+        }
+
+        // === MODE 2: Lật ngược thành nút Có (click) ===
+        function handleMode2() {
+            if (trollMode !== 2) return;
+            noClickCount++;
+            noBtn.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+
+            if (noClickCount === 1) {
+                showTroll("Ủa? Cái này lạ lắm nha 👀");
+                noBtn.style.transform = 'rotateY(90deg)';
+                setTimeout(() => {
+                    noBtn.innerHTML = `💖 Có chứ! 💖`;
+                    noBtn.className = 'w-full sm:w-1/2 py-4 bg-gradient-to-r from-pink-500 to-rose-400 text-white text-xl font-black rounded-full shadow-lg cursor-pointer transition-all duration-300 flex items-center justify-center gap-2 border-0';
+                    noBtn.style.transform = 'rotateY(0deg)';
+                }, 250);
+                // Nếu bấm nút "Không" giờ đã thành "Có" thì trigger yes
+                setTimeout(() => {
+                    noBtn.addEventListener('click', () => yesBtn.click(), { once: true });
+                }, 600);
+                showTroll("Lật rồi! Bây giờ là nút Có rồi nha! 😂");
+            }
+        }
+
+        // Gắn event click cho nút Không
+        noBtn.addEventListener('click', () => {
+            if (trollMode === 1) handleMode1();
+            else if (trollMode === 2) handleMode2();
         });
+
+        // Gắn mode 0
+        setupMode0();
+
+        // Reset lại trollMode mỗi lần reload màn hình ask
+        // (được gọi từ closeBtn)
+
 
         yesBtn.addEventListener('click', () => {
             spawnExplosion(window.innerWidth/2, window.innerHeight/2);
@@ -346,7 +445,14 @@
             spawnExplosion(window.innerWidth/2, window.innerHeight/3);
         });
 
-        closeBtn.addEventListener('click', () => location.reload());
+        closeBtn.addEventListener('click', () => {
+            endScreen.classList.add('hidden');
+            scheduleScreen.classList.add('hidden');
+            askScreen.classList.add('hidden');
+            envelope.classList.remove('open');
+            resetTrollState();
+            envelopeScreen.style.display = 'flex';
+        });
         setInterval(() => {
             const heart = document.createElement('div');
             heart.className = 'heart-particle';
